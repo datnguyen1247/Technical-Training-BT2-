@@ -1,0 +1,32 @@
+{
+  "name": "test-app182",
+  "version": "1.0.0",
+  "main": "web/index.js",
+  "license": "UNLICENSED",
+  "scripts": {
+    "shopify": "shopify",
+    "build": "shopify app build",
+    "dev": "shopify app dev",
+    "info": "shopify app info",
+    "generate": "shopify app generate",
+    "deploy": "shopify app deploy"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.5.1",
+    "@shopify/app-bridge-react": "^4.1.6",
+    "@shopify/polaris-icons": "^9.3.0",
+    "@shopify/shopify-api": "^11.9.0",
+    "@shopify/storefront-api-client": "^1.0.4",
+    "axios": "^1.7.9",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.7",
+    "react-redux": "^9.2.0"
+  },
+  "author": "nguye",
+  "private": true,
+  "workspaces": [
+    "extensions/*",
+    "web",
+    "web/frontend"
+  ]
+}
