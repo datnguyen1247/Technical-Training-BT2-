@@ -11,6 +11,9 @@ const translationApi = {
     async save(data,options={}) {
         return await axiosClient.post('/translation',data,options);
     },
+    async add(data,options={}) {
+        return await axiosClient.post('/translationAdd',data,options);
+    },
     async delete(locale){
         return await axiosClient.delete(`/translation/${locale}`);
     },

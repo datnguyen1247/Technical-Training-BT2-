@@ -26,7 +26,6 @@
     border-style: {{ customization.input_border }};
     border-radius: {{ customization.input_border_radius }}px;
     box-shadow: none;
-
   }
   #discount-button {
     width: {{ customization.button_width }}px;
@@ -88,14 +87,6 @@
   const shopDomain = '{{ shop.permanent_domain }}';
   async function applyDiscountCode(discountCode) {
     try {
-      const response = await fetch('http://localhost:3000/shop', {
-        method: 'GET',
-        headers: {
-          shopify_domain: shopDomain
-        }
-      });
-      const shop = await response.json();
-      
       const cartResponse = await getCart()
       const token = cartResponse.token;
       let currentDiscounts = filterDiscountFromCart(cartResponse);
@@ -103,25 +94,29 @@
         alert("Tối đa là 5 discount");
         return
       }
-      const storefront_access_token = shop.data.storefront_access_token 
       const newDiscountCode = [...currentDiscounts,discountCode]
-      const result = await graphqlApiUpdateDiscounts(shopDomain,storefront_access_token,token,newDiscountCode)
-      return result.data.cartDiscountCodesUpdate.cart;
+      const result = await graphqlApiUpdateDiscounts(shopDomain,token,newDiscountCode);
+      return result;
     } catch (error) {
       console.error('Error applying discount:', error);
       throw error;
     }
   }
 
+  async function graphqlApiUpdateDiscounts (shopDomain,token,newDiscountCode){
+    const response = await fetch('/apps/myapp/discount',{
+      method:'POST',
+      headers:{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'ngrok-skip-browser-warning':'123'
+      },
+      body : JSON.stringify({shopDomain,token,currentDiscounts:newDiscountCode})
+    });
+    return response
+  }
   async function removeDiscountCode(codeToRemove) {
     try {
-      const response = await fetch('http://localhost:3000/shop', {
-        method: 'GET',
-        headers: {
-          shopify_domain: shopDomain
-        }
-      });
-      const shop = await response.json();
       
       const cartResponse = await fetch('/cart.js');
       const cart = await cartResponse.json();
@@ -129,9 +124,8 @@
 
       let remainingDiscounts = [];
       let currentDiscounts = filterDiscountFromCart(cart).filter((discount) => discount !== codeToRemove)
-      const storefront_access_token = shop.data.storefront_access_token 
-      const result = await graphqlApiUpdateDiscounts(shopDomain,storefront_access_token,token,currentDiscounts)
-      return result.data.cartDiscountCodesUpdate.cart;
+      const result = await graphqlApiUpdateDiscounts(shopDomain,token,currentDiscounts)
+      return result
     } catch (error) {
       console.error('Error removing discount:', error);
       throw error;
@@ -141,7 +135,6 @@
   async function getCart() {
     const response = await fetch('/cart.js');
     const cart = await response.json();
-    console.log('cart',cart)
     return cart;
   }
 
@@ -179,49 +172,51 @@
           });
         });
           } else {
-            container.innerHTML = '<p>No discount codes applied.</p>';
-          }
+            container.innerHTML = '';
+      }
     } catch (error) {
       console.error('Error loading cart:', error);
     }
   }
 
-  async function graphqlApiUpdateDiscounts(shopDomain,storefront_access_token,token,currentDiscounts){
-    const graphqlResponse = await fetch(`https://${shopDomain}/api/2024-01/graphql.json`, {
-        method: 'POST',
-        headers: {
-          'X-Shopify-Storefront-Access-Token': storefront_access_token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: `
-            mutation cartDiscountCodesUpdate($cartId: ID!, $discountCodes: [String!]) {
-              cartDiscountCodesUpdate(cartId: $cartId, discountCodes: $discountCodes) {
-                cart {
-                  id
-                  discountCodes {
-                    code
-                    applicable
-                  }
-                }
-                userErrors {
-                  field
-                  message
-                }
-              }
-            }
-          `,
-          variables: {
-            cartId: `gid://shopify/Cart/${token}`,
-            discountCodes: currentDiscounts
-          }
-        })
-      });
-      const result = await graphqlResponse.json();
-      return result
-  }
+  // async function graphqlApiUpdateDiscounts(shopDomain,storefront_access_token,token,currentDiscounts){
+    
+  // const graphqlResponse = await fetch(`https://${shopDomain}/api/2024-01/graphql.json`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'X-Shopify-Storefront-Access-Token': storefront_access_token,
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         query: `
+  //           mutation cartDiscountCodesUpdate($cartId: ID!, $discountCodes: [String!]) {
+  //             cartDiscountCodesUpdate(cartId: $cartId, discountCodes: $discountCodes) {
+  //               cart {
+  //                 id
+  //                 discountCodes {
+  //                   code
+  //                   applicable
+  //                 }
+  //               }
+  //               userErrors {
+  //                 field
+  //                 message
+  //               }
+  //             }
+  //           }
+  //         `,
+  //         variables: {
+  //           cartId: `gid://shopify/Cart/${token}`,
+  //           discountCodes: currentDiscounts
+  //         }
+  //       })
+  //     });
+  //     console.log('graphqlResponse',graphqlResponse)
+  //     const result = await graphqlResponse.json();
+  //     return result
+  // }
+  
   function filterDiscountFromCart(cart){
-    console.log(cart)
     let discountList = []
     cart.items.forEach(item => {
         if (item.discounts?.length > 0) {
@@ -242,21 +237,21 @@
 
     return discountList
     }
-  document.getElementById('discount-button').addEventListener('click', async function() {
-    const discountCodeValue = document.getElementById('input-discount').value.trim();
-    if (!discountCodeValue) {
-      alert("Vui lòng nhập discount code");
-      return;
-    }
+    document.getElementById('discount-button').addEventListener('click', async function() {
+      const discountCodeValue = document.getElementById('input-discount').value.trim();
+      if (!discountCodeValue) {
+        alert("Vui lòng nhập discount code");
+        return;
+      }
 
-    try {
-      const res = await applyDiscountCode(discountCodeValue);
-      document.getElementById('input-discount').value = '';
-      await reloadCart();
-    } catch (error) {
-      alert("Failed to apply discount: " + error.message);
-    }
-  });
+      try {
+        const res = await applyDiscountCode(discountCodeValue);
+        document.getElementById('input-discount').value = '';
+        await reloadCart();
+      } catch (error) {
+        alert("Failed to apply discount: " + error.message);
+      }
+    });
 
   reloadCart();
 </script>

@@ -18,7 +18,7 @@ export default function TranslationPage() {
   const shopify = useAppBridge();
   const [activeModal, setActiveModal] = useState(false);
   const [dataTranslation, setDataTranslation] = useState([]);
-  const [translation, setTranslation] = useState("");
+  const [translation, setTranslation] = useState();
   useEffect(() => {
     const fetchGetDataTranslation = async () => {
       const result = await translationApi.getAll();
@@ -117,7 +117,6 @@ export default function TranslationPage() {
           </VerticalStack>
         </VerticalStack>
       </div>
-
       <>
         <Modal id="modalAddTranslation" variant="base">
           <div style={{ padding: "8px" }}>

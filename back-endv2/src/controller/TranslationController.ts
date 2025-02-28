@@ -27,14 +27,13 @@ export class TranslationController {
     const translation = await this.translationRepository.findOne({
       where: { locale },
     });
-    console.log('run')
     if (!translation) {
       return "unregistered translation";
     }
     return {
-        statusCode: StatusCodes.CREATED,
-        message: StatusCodes[StatusCodes.CREATED],
-        data: translation,
+      statusCode: StatusCodes.CREATED,
+      message: StatusCodes[StatusCodes.CREATED],
+      data: translation,
     };
   }
 
@@ -47,26 +46,48 @@ export class TranslationController {
       });
 
       if (translation) {
-        translation =  Object.assign(translation, data);
+        translation = Object.assign(translation, data);
       } else {
-        translation =  Object.assign(new Translation(), data);
+        translation = Object.assign(new Translation(), data);
         translation.translate = {
-          button_text:'Apply',
-          placeholder_text:'Discount code'
-        }
+          button_text: "Apply",
+          placeholder_text: "Discount code",
+        };
       }
       translation.shopify_domain = request.headers.shopify_domain;
-      const result = await  this.translationRepository.save(translation);
+      const result = await this.translationRepository.save(translation);
       return {
         statusCode: StatusCodes.CREATED,
         message: StatusCodes[StatusCodes.CREATED],
         data: result,
-      }
+      };
     } catch (error) {
       next(error);
     }
   }
 
+  async add(request: Request, response: Response, next: NextFunction) {
+    try {
+      const data = request.body;
+      let translation = await this.translationRepository.findOne({
+        where: { locale: data.locale },
+      });
+      if (!translation) {
+        translation = Object.assign(new Translation(), data);
+        translation.shopify_domain = request.headers.shopify_domain;
+        const result = await this.translationRepository.save(translation);
+        return {
+          statusCode: StatusCodes.CREATED,
+          message: StatusCodes[StatusCodes.CREATED],
+          data: result,
+        };
+      } else {
+        return;
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
   async remove(request: Request, response: Response, next: NextFunction) {
     const locale = request.params.locale;
 

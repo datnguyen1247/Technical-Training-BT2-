@@ -31,7 +31,9 @@ app.get(
   shopify.auth.callback(),
   async (req, res, next) => {
     const session = res.locals.shopify.session;
+    console.log('session',session)
     const queryParams = { ...req.query };
+    console.log('queryParams',queryParams)
     const { code, shop } = queryParams
     if (!code || !shop) {
       return res.status(400).send("Missing required parameters: 'code' or 'shop'");
@@ -193,7 +195,7 @@ async function ensureStorefrontAccessToken(shop, accessToken) {
     );
     return createResponse.data.storefront_access_token;
   } catch (error) {
-    console.error("Lỗi khi kiểm tra/tạo Storefront Access Token:", error);
+    console.error("Lỗi tạo Storefront Access Token:", error);
     return null;
   }
 }
@@ -267,7 +269,6 @@ const createMetaObject = async (session) => {
           }
         }
       });
-      console.log('run')
     } else {
       console.log("Metaobject Definition đã tồn tại");
     }

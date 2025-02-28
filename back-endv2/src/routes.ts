@@ -1,17 +1,26 @@
 import { CustomizationController } from "./controller/CustomizationController";
+import { DiscountController } from "./controller/DiscountController";
 import { ShopController } from "./controller/ShopController";
 import { TranslationController } from "./controller/TranslationController";
 import verifyHMAC from "./middlewares/verifyHmac.middleware";
+import verifyHmacStorefront from "./middlewares/verifyHmacStorefront.middleware";
 import verifySessionToken from "./middlewares/verifySessionToken";
 
 export const Routes = [
-  //SHOP    
+  //SHOP
   {
     method: "post",
     route: "/shop",
     controller: ShopController,
     action: "save",
-    middlewares : [verifyHMAC]
+    middlewares: [verifyHMAC],
+  },
+  {
+    method: "post",
+    route: "/discount",
+    controller: DiscountController,
+    action: "updateDiscount",
+    // middlewares: [verifyHmacStorefront],
   },
   {
     method: "patch",
@@ -31,9 +40,9 @@ export const Routes = [
     route: "/shop",
     controller: ShopController,
     action: "all",
-    middlewares : [verifySessionToken]
+    middlewares: [verifySessionToken],
   },
-  
+
   //FAKE LOGIN
   {
     method: "post",
@@ -47,14 +56,14 @@ export const Routes = [
     route: "/customization",
     controller: CustomizationController,
     action: "save",
-    middlewares : [verifySessionToken]
+    middlewares: [verifySessionToken],
   },
   {
     method: "get",
     route: "/customization",
     controller: CustomizationController,
     action: "one",
-    middlewares : [verifySessionToken]
+    middlewares: [verifySessionToken],
   },
   //Translation
   {
@@ -62,29 +71,34 @@ export const Routes = [
     route: "/translation",
     controller: TranslationController,
     action: "all",
-    middlewares : [verifySessionToken]
+    middlewares: [verifySessionToken],
   },
   {
     method: "get",
     route: "/translation/:locale",
     controller: TranslationController,
     action: "one",
-    middlewares : [verifySessionToken]
+    middlewares: [verifySessionToken],
   },
   {
     method: "post",
     route: "/translation",
     controller: TranslationController,
     action: "save",
-    middlewares : [verifySessionToken]
+    middlewares: [verifySessionToken],
   },
-
+  {
+    method: "post",
+    route: "/translationAdd",
+    controller: TranslationController,
+    action: "add",
+    middlewares: [verifySessionToken],
+  },
   {
     method: "delete",
     route: "/translation/:locale",
     controller: TranslationController,
     action: "remove",
-    middlewares : [verifySessionToken]
-
+    middlewares: [verifySessionToken],
   },
 ];
